@@ -1,0 +1,15 @@
+/dist/*
+/build/*
+/nbproject/*
+/ArhDb/*
+*.class
+*.bak
+
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+dist/TrekerManager.jar
+*.properties
