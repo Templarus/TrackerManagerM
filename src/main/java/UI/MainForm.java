@@ -40,6 +40,7 @@ public class MainForm extends javax.swing.JFrame {
         PanelScrolPane = new javax.swing.JScrollPane();
         AddButton = new javax.swing.JButton();
         butTrackerData = new javax.swing.JButton();
+        getDataButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setLocation(new java.awt.Point(300, 400));
@@ -74,7 +75,16 @@ public class MainForm extends javax.swing.JFrame {
             }
         });
         PanelFont.add(butTrackerData);
-        butTrackerData.setBounds(330, 20, 100, 23);
+        butTrackerData.setBounds(290, 20, 100, 23);
+
+        getDataButton.setText("Get Data");
+        getDataButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                getDataButtonActionPerformed(evt);
+            }
+        });
+        PanelFont.add(getDataButton);
+        getDataButton.setBounds(20, 20, 100, 23);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -157,6 +167,10 @@ public class MainForm extends javax.swing.JFrame {
         TrekerData td = new TrekerData(new javax.swing.JFrame(), false);
         td.setVisible(true);
     }//GEN-LAST:event_butTrackerDataActionPerformed
+
+    private void getDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_getDataButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_getDataButtonActionPerformed
 
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
@@ -321,5 +335,6 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JPanel PanelFont;
     private javax.swing.JScrollPane PanelScrolPane;
     private javax.swing.JButton butTrackerData;
+    private javax.swing.JButton getDataButton;
     // End of variables declaration//GEN-END:variables
 }

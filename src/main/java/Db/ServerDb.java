@@ -281,7 +281,7 @@ public class ServerDb implements Constatnts {
 
     private int hasNextTimeWork(Device dev, Date dtLast, Time timeLast) {
         int countRecord = 0;
-        sql = "SELECT COUNT(*) AS Count FROM PackageDate WHERE (deviceId = '" + dev.getId() + "' ) AND  (date > '" + dtLast.toString() + "') AND (time > '" + timeLast + "') AND (ISNULL(input2,0) = 1)";
+        sql = "SELECT COUNT(*) AS Count FROM PackageDate WHERE ((deviceId = '" + dev.getId() + "' ) AND  (date > '" + dtLast.toString() + "')AND (ISNULL(input2,0) = 1)) OR ((deviceId = '" + dev.getId() + "' ) AND  (date >= '" + dtLast.toString() + "')AND (ISNULL(input2,0) = 1) AND (time > '" + timeLast + "')) ";
         System.out.println("hasNextTimeWork - SQL : " + sql);
         rs = selectDb(sql);
         try {
