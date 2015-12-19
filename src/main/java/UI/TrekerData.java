@@ -55,10 +55,12 @@ public class TrekerData extends javax.swing.JDialog {
         DeviceTimeWorkForDayExtend.getColumnModel().getColumn(2).setPreferredWidth(100);
         DeviceTimeWorkForDayExtend.getColumnModel().getColumn(3).setPreferredWidth(120);
         DeviceTimeWorkForDayExtend.getColumnModel().getColumn(4).setPreferredWidth(120);
-
+        if(sTreker.getRowCount() != 0){
         sTreker.setRowSelectionInterval(0, 0);
+        }
+        if(DeviceTimeWorkForDay.getRowCount() != 0){
         DeviceTimeWorkForDay.setRowSelectionInterval(0, 0);
-
+        }
     }
 
     /**

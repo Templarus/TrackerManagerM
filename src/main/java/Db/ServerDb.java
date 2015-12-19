@@ -232,7 +232,10 @@ public class ServerDb implements Constatnts {
 
                 //if (dtLast.equals(dtLastW) | timeLast.equals(timeLastW)) {
                 try {
-                    sql = "SELECT  TOP(1)  date, time FROM PackageDate WHERE (ISNULL(input2,0) = 1) AND deviceId = '" + dev.getId() + "' AND date > = '" + dtLast + "' AND time > '" + timeLast.toString() + "' ORDER BY date, time";
+                      sql = "SELECT TOP(1) date, time FROM PackageDate WHERE (deviceId = '" + dev.getId() + "') AND (date > '" + dtLast + "') AND (ISNULL(input2, 0) = 1) OR (deviceId = N'" + dev.getId() + "') AND (date >= '" + dtLast + "') AND (ISNULL(input2, 0) = 1) AND (time > '" + timeLast.toString() + "')";
+                    //sql = "SELECT  TOP(1)  date, time FROM PackageDate WHERE (ISNULL(input2,0) = 1) AND deviceId = '" + dev.getId() + "' AND date > = '" + dtLast + "' AND time > '" + timeLast.toString() + "' ORDER BY date, time";
+                    
+                    
                     rs = selectDb(sql);
                     System.out.println("Получение данных по последней дате работы" + sql);
                     while (rs.next()) {
@@ -281,7 +284,10 @@ public class ServerDb implements Constatnts {
 
     private int hasNextTimeWork(Device dev, Date dtLast, Time timeLast) {
         int countRecord = 0;
-        sql = "SELECT COUNT(*) AS Count FROM PackageDate WHERE ((deviceId = '" + dev.getId() + "' ) AND  (date > '" + dtLast.toString() + "')AND (ISNULL(input2,0) = 1)) OR ((deviceId = '" + dev.getId() + "' ) AND  (date >= '" + dtLast.toString() + "')AND (ISNULL(input2,0) = 1) AND (time > '" + timeLast + "')) ";
+        sql = "SELECT        COUNT(*) AS Count "
+                + "FROM            PackageDate "
+                + "WHERE        (deviceId = '" + dev.getId() + "') AND (date > '" + dtLast.toString() + "') AND (ISNULL(input2, 0) = 1) OR (deviceId = N'" + dev.getId() + "') AND (date >= '" + dtLast.toString() + "') AND (ISNULL(input2, 0) = 1) AND (time > '" + timeLast + "')";        
+//sql = "SELECT COUNT(*) AS Count FROM PackageDate WHERE ((deviceId = '" + dev.getId() + "' ) AND  (date > '" + dtLast.toString() + "')AND (ISNULL(input2,0) = 1)) OR ((deviceId = '" + dev.getId() + "' ) AND  (date >= '" + dtLast.toString() + "')AND (ISNULL(input2,0) = 1) AND (time > '" + timeLast + "')) ";
         System.out.println("hasNextTimeWork - SQL : " + sql);
         rs = selectDb(sql);
         try {
