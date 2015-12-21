@@ -1,4 +1,4 @@
-package trekermanager;
+package yandexPack;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
@@ -32,16 +32,11 @@ public class YandexRequest {
     private byte[] incoming;
     private int length = 0;
     private InputStream in;
+    private URLConnection conn;
+    private OutputStreamWriter out;
 
     public YandexRequest() {
-//        try {
-//            sendUnirest();
-//            
-//        } catch (UnirestException ex) {
-//            Logger.getLogger(YandexRequest.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-        //sendPost();
-        sendData();
+        sendDataURL();
     }
 
     public static void main(String args[]) {
@@ -72,25 +67,22 @@ public class YandexRequest {
         return json;
     }
 
-    public void sendData() {
+    public void sendDataURL() {
 
 //   json={"common": {"version": "1.0","api_key": "AAwkGkwBAAAA9muWLAMAKp9XjTBZtmOLeiBQJqHX6YEqNdUAAAAAAAAAAAAoEP1ZsBlcVFA_OpP55MK3Ek1r8A=="},
 //   "gsm_cells": [{"countrycode": 250,"operatorid": 1,"cellid": 29016,"lac": 717,"signal_strength": -80,"age": 5555}],
 //       
-        String host = "api.lbs.yandex.net";
-        int port = 80;
+        String host = "http://api.lbs.yandex.net/geolocation";
 
-        Socket socket = new Socket();
         try {
-            socket = new Socket(host, port);
+            conn = new URL(host).openConnection();
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(YandexRequest.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(YandexRequest.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        // пишем туда HTTP request
         String jsonA = "json=" + makeJson().toString();
-        int k=jsonA.getBytes().length;
-
+        int k = jsonA.getBytes().length;
         String header = "POST /geolocation HTTP/1.1\n"
                 + "Host:api.lbs.yandex.net\n"
                 + "Accept-Encoding: identity\n"
@@ -98,8 +90,17 @@ public class YandexRequest {
                 + "Content-type: application/x-www-form-urlencoded\n"
                 + "Cache-Control: no-cache\n"
                 + "Postman-Token: f7308c39-1a7f-4326-459e-305d491d65c4\n";
+        conn.setDoOutput(true);// Triggers POST.
+        //conn.setRequestProperty("POST", "/geolocation HTTP/1.1\n");
+        conn.setRequestProperty("Host", "api.lbs.yandex.net");
+        conn.setRequestProperty("Accept-Encoding", "identity");
+        conn.setRequestProperty("Content-length", k + "");
+        conn.setRequestProperty("Content-type", "application/x-www-form-urlencoded");
+        conn.setRequestProperty("Cache-Control", "no-cache");
+        conn.setRequestProperty("Postman-Token", "f7308c39-1a7f-4326-459e-305d491d65c4");
 
-        String request = header + jsonA;
+        // пишем туда HTTP request
+        String request = jsonA;
         // String request = "json=" + makeJson() + "";
 
         System.out.println("request=");
@@ -107,16 +108,19 @@ public class YandexRequest {
         System.err.println("======================================");
 
         try {
-            socket.getOutputStream().write(request.getBytes());
+            out = new OutputStreamWriter(conn.getOutputStream(), "ASCII");
+            out.write(request);
+            out.write("\r\n");
+            out.flush();
+            out.close();
         } catch (IOException ex) {
             Logger.getLogger(YandexRequest.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         try {
-            in = socket.getInputStream();
+            in = conn.getInputStream();
 
             incoming = new byte[64 * 1024];
-
             length = in.read(incoming);
         } catch (IOException ex) {
             Logger.getLogger(YandexRequest.class.getName()).log(Level.SEVERE, null, ex);
@@ -128,54 +132,4 @@ public class YandexRequest {
         // закрываем файл
     }
 
-    public void sendPost() {
-
-        OkHttpClient client = new OkHttpClient();
-
-        MediaType mediaType = MediaType.parse("application/octet-stream");
-        String jsRequest = "json=" + makeJson() + "";
-        RequestBody body = RequestBody.create(mediaType, jsRequest);
-        Request request = new Request.Builder()
-                .url("http://api.lbs.yandex.net/geolocation")
-                .post(body)
-                .addHeader("host", "api.lbs.yandex.net")
-                .addHeader("accept-encoding", "identity")
-                .addHeader("content-length", "742")
-                .addHeader("content-type", "application/x-www-form-urlencoded")
-                .addHeader("cache-control", "no-cache")
-                .addHeader("postman-token", "0f17ea17-e408-6bd6-18b0-d94be704977f")
-                .build();
-
-        try {
-            Response response = client.newCall(request).execute();
-            System.out.println(response.message());
-        } catch (IOException ex) {
-            Logger.getLogger(YandexRequest.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    public void sendUnirest() throws UnirestException {
-        HttpResponse<String> response = Unirest.post("http://api.lbs.yandex.net/geolocation")
-                .header("host", "api.lbs.yandex.net")
-                .header("accept-encoding", "identity")
-                .header("content-length", "742")
-                .header("content-type", "application/x-www-form-urlencoded")
-                .header("cache-control", "no-cache")
-                .header("postman-token", "85fdf083-4f26-a87f-3658-982b336d10b3")
-                .body("json={\"common\":{\"api_key\":\"AAwkGkwBAAAA9muWLAMAKp9XjTBZtmOLeiBQJqHX6YEqNdUAAAAAAAAAAAAoEP1ZsBlcVFA_OpP55MK3Ek1r8A==\",\"version\":\"1.0\"},\"gsm_cells\":[{\"countrycode\":\"250\",\"signal_strength\":\"-80\",\"cellid\":\"29016\",\"operatorid\":\"1\",\"age\":\"5555\",\"lac\":\"717\"}]}")
-                .asString();
-        System.err.println(response.getBody());
-    }
-
-    public void sendTry()throws IOException {
-        String requestUrl = "http://api.lbs.yandex.net/geolocation";
-
-        URL url = new URL(requestUrl);
-        
-        HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
-        
-        httpConnection.connect();
-        int rc = httpConnection.getResponseCode();
-
-    }
 }
