@@ -179,6 +179,8 @@ public class TrekerData extends javax.swing.JDialog {
 
     private void butRaschetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butRaschetActionPerformed
         MainForm.sdb.updDeviceTimeWork();
+        sTreker.updateUI();
+        DeviceTimeWorkForDay.updateUI();
     }//GEN-LAST:event_butRaschetActionPerformed
 
     private void sTrekerMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sTrekerMouseClicked
