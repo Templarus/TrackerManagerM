@@ -1,13 +1,5 @@
 package yandexPack;
 
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
 import java.io.*;
 import java.net.*;
 import java.util.LinkedHashMap;
@@ -16,7 +8,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import java.net.HttpURLConnection;
 
 /*
  * To change this license header, choose License Headers in Project Properties.

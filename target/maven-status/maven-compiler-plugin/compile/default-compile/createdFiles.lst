@@ -18,6 +18,7 @@ trekermanager\Device.class
 UI\TrekerData.class
 UI\MainForm$3.class
 UI\TrekerData$3.class
+yandexPack\YandexRequest.class
 UI\TESTCLASS.class
 EventManagment\EventLogger.class
 trekermanager\DeviceListener.class

@@ -48,7 +48,7 @@ public class PackageData extends Pack {
         this.ibutton = ibutton;
         this.params = params;
         String paramsbody[] = params.split(",");
-        HashMap<String, String> parameters = new HashMap<>();
+        HashMap<String, String> parameters = new HashMap<String, String>();
         for (String paramsbody1 : paramsbody) {
             String[] value = paramsbody1.split(":");
             if (paramsbody1.length() > 2) {
