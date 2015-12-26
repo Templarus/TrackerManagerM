@@ -59,18 +59,33 @@ public class DeviceListener implements Runnable {
                 } catch (IOException ex) {
                     System.err.println("DeviceListener:IOException in listener(getInputStream) " + device.getId() + " : " + ex.getMessage());
                 }
+
                 Start.mf.setTime(device, System.currentTimeMillis()); // считаем, что пакет пришёл - значит нужно обновить время
+
                 System.out.println("Client query(" + length + " bytes):" + new String(incoming).trim());
-                String reply = makeAnswer(incoming); // выполняется метод, который возвращает устройству требуемый ответ в зависимости от пришедшего пакета
-                if (reply.equals("empty")) { //если вернулось empty - устройство разорвало соединение со своей стороны.
+
+                Start.mf.sendMessageToBuffer(device, makeAnswer(incoming));
+
+                // String reply = makeAnswer(incoming); // выполняется метод, который возвращает устройству требуемый ответ в зависимости от пришедшего пакета
+                //if (reply.equals("empty")) { //если вернулось empty - устройство разорвало соединение со своей стороны.
+                if (Start.mf.getMessagesFromBuffer(device).isEmpty()) {
                     System.err.println("DeviceListener: empty answer");
                     Start.mf.setWatcherStatus(device, false); // соединение разорвано и требуется запустить новый поток с новым Listener для этого порта и устройства
                 } else {
+                    for (String reply : Start.mf.getMessagesFromBuffer(device)) {
+                        try {
+                            out.write(reply.getBytes());
+                        } catch (IOException ex) {
+                            System.err.println("DeviceListener:IOException in listener(out.write) " + device.getId() + " : " + ex.getMessage());
+
+                        }
+                    }
                     try {
-                        out.write(reply.getBytes());
                         out.flush();
+                        // сюда добавить подтверждение выполнения
+                        Start.mf.cleanMessageBuffer(device);
                     } catch (IOException ex) {
-                        System.err.println("DeviceListener:IOException in listener(out.write) " + device.getId() + " : " + ex.getMessage());
+                        System.err.println("DeviceListener:IOException in listener(out.flush()) " + device.getId() + " : " + ex.getMessage());
 
                     }
                     System.out.println("DeviceListener: getPacket executed");

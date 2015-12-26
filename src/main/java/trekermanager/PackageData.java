@@ -1,5 +1,6 @@
 package trekermanager;
 
+import Db.ServerDb;
 import UI.Start;
 import java.util.HashMap;
 
@@ -31,8 +32,10 @@ public class PackageData extends Pack {
     private boolean input1;
     private boolean input2;
 //D#020100;030326;NA;NA;NA;NA;NA;NA;NA;NA;NA;NA;NA;;000000000000;IDX:1:107,MCC:1:250,MNC:1:1,LAC:1:407,CID:1:56625,Vext:1:8376,IN1:1:0,IN2:1:0
+       private  ServerDb sdb;
 
     public PackageData(String id, String date, String time, String lat, String lon, int speed, int course, int height, int sats, float hdop, int digitinput, int digitoutput, String ads, String ibutton, String params) {
+        this.sdb=Start.mf.getSdb();
         this.id = id;
         this.date = date;
         this.time = time;
@@ -107,7 +110,7 @@ public class PackageData extends Pack {
         } else {
             Start.mf.deviceStatus(this.id, false);
         }
-        Start.mf.sdb.setPackageData(this);
+       sdb.setPackageData(this);
     }
 
     public String getId() {

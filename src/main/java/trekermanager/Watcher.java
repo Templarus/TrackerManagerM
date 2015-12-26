@@ -1,12 +1,10 @@
 package trekermanager;
 
+import Db.ServerDb;
 import UI.Start;
-import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 // класс с пустым конструктором - предусмотрен для наблюдением за статусом Listenerов в коллекции WatcherList в static объекте MainFrom(Start.mf)
 // функционал для перезапуска при ручном добавлении нового устройства не доделан
@@ -18,9 +16,10 @@ public class Watcher implements Runnable {
     private long time1;
     private long time2;
     private final int timeLimit = 240000;
+    private ServerDb sdb;
 
     public Watcher() {
-
+        sdb = Start.mf.getSdb();
     }
 
     private void Check() {
@@ -44,7 +43,7 @@ public class Watcher implements Runnable {
                     }
                 } else {
                     System.out.println("Wathcer: recreating DeviceListener for device " + key);
-                  
+
                     Start.mf.createListener(device);// если false - создаём listener с этим устройством
                 }
             }
@@ -62,6 +61,12 @@ public class Watcher implements Runnable {
     @Override
     public void run() {
         Check();
+    }
+
+    private void checkMessages( Device device) {// метод нужно заполнить
+//        if (!sdb.getMessage(device).isEmpty()) { // сюда метод возвращающий коллекцию всех сообщений с 0  серверити и собственно НЕ зааккноледженных по всем
+//        Start.mf.sendMessageToBuffer(device, sdb.getMessages(device));
+//        }
     }
 
     private void closeListener(Device device) {//метод закрывающий текущий листенер
