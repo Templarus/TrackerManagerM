@@ -37,15 +37,21 @@ public class YandexRequest {
 
 
     public YandexRequest(String message, boolean isGPS) {
+      //  sendDataURL();
+    }
+
+    public String[] getLocation(String message, boolean isGPS)
+    {
         if (isGPS) {
             String body[] = message.split(";");
             System.err.println("GPS YOABA");
         } else {
             splitCellData(message);
         }
-        sendDataURL();
+        
+        
+        return sendDataURL();
     }
-
     private void splitCellData(String data) {
         String paramsbody[] = data.split(",");
         HashMap<String, String> parameters = new HashMap<String, String>();
@@ -83,31 +89,9 @@ public class YandexRequest {
         new YandexRequest("IDX:1:8774,DEV:3:0x0290,MCC:1:250,MNC:1:1,LAC:1:717,CID:1:29016,Vext:1:0,IN1:1:0,IN2:1:0",false);
     }
 
-    private JSONObject makeJson() {
-        JSONObject json = new JSONObject();
-        Map common = new LinkedHashMap();
+  
 
-        common.put("api_key", "AAwkGkwBAAAA9muWLAMAKp9XjTBZtmOLeiBQJqHX6YEqNdUAAAAAAAAAAAAoEP1ZsBlcVFA_OpP55MK3Ek1r8A==");
-        common.put("version", "1.0");
-
-        Map gsm_cell = new LinkedHashMap();
-        gsm_cell.put("countrycode", mcc);
-        gsm_cell.put("operatorid", mnc);
-        gsm_cell.put("cellid", cid);
-        gsm_cell.put("lac", lac);
-        // gsm_cell.put("signal_strength", "-100");
-        // gsm_cell.put("age", "4555");
-
-        JSONArray gsm_cells = new JSONArray();
-        gsm_cells.put(gsm_cell);
-
-        json.put("common", common);
-        json.put("gsm_cells", gsm_cells);
-        // System.out.println(json);
-        return json;
-    }
-
-    public void sendDataURL() {
+    public String[] sendDataURL() {
 
 //   json={"common": {"version": "1.0","api_key": "AAwkGkwBAAAA9muWLAMAKp9XjTBZtmOLeiBQJqHX6YEqNdUAAAAAAAAAAAAoEP1ZsBlcVFA_OpP55MK3Ek1r8A=="},
 //   "gsm_cells": [{"countrycode": 250,"operatorid": 1,"cellid": 29016,"lac": 717,"signal_strength": -80,"age": 5555}],
@@ -192,10 +176,10 @@ public class YandexRequest {
 //        lon = jAnsw.optDouble("longitude");
 
         //https://geocode-maps.yandex.ru/1.x/?format=json&geocode=37.470653,55.664897
-        getLocation();
+      return  getLocation();
     }
 
-    private void getLocation() {
+    private String[] getLocation() {
         String host = "https://geocode-maps.yandex.ru/1.x/?format=json&geocode=" + lon + "," + lat + "";
 
         try {
@@ -249,6 +233,7 @@ public class YandexRequest {
           
             System.out.println("Street: " + street);
         }
+        return getAdress(jAnsw);
     }
 
     private String[] getAdress(JSONObject jsonObj) {
@@ -290,5 +275,29 @@ public class YandexRequest {
         streets[0] = Thoroughfare.getString("ThoroughfareName");
         streets[1] = LocalityName.getString("LocalityName");
         return streets;
+    }
+    
+    private JSONObject makeJson() {
+        JSONObject json = new JSONObject();
+        Map common = new LinkedHashMap();
+
+        common.put("api_key", "AAwkGkwBAAAA9muWLAMAKp9XjTBZtmOLeiBQJqHX6YEqNdUAAAAAAAAAAAAoEP1ZsBlcVFA_OpP55MK3Ek1r8A==");
+        common.put("version", "1.0");
+
+        Map gsm_cell = new LinkedHashMap();
+        gsm_cell.put("countrycode", mcc);
+        gsm_cell.put("operatorid", mnc);
+        gsm_cell.put("cellid", cid);
+        gsm_cell.put("lac", lac);
+        // gsm_cell.put("signal_strength", "-100");
+        // gsm_cell.put("age", "4555");
+
+        JSONArray gsm_cells = new JSONArray();
+        gsm_cells.put(gsm_cell);
+
+        json.put("common", common);
+        json.put("gsm_cells", gsm_cells);
+        // System.out.println(json);
+        return json;
     }
 }
