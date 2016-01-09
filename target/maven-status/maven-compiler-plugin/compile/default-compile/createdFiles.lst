@@ -8,6 +8,7 @@ trekermanager\Watcher.class
 UI\DatabaseTableModel.class
 UI\MainForm$2.class
 UI\MainForm.class
+UI\Message.class
 UI\TrekerData$2.class
 UI\IconDeviceStatus.class
 UI\FormDeviceParams$1.class

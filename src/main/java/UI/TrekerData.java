@@ -89,7 +89,7 @@ public class TrekerData extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        jLabel1.setText("Информация по трекерам");
+        jLabel1.setText("Трекеры");
 
         sTreker.setAutoCreateRowSorter(true);
         sTreker.setModel(dbm);
@@ -180,17 +180,11 @@ public class TrekerData extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void butRaschetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butRaschetActionPerformed
-<<<<<<< HEAD
-        MainForm.sdb.updDeviceTimeWork();
-        sTreker.updateUI();
-        DeviceTimeWorkForDay.updateUI();
-=======
+
         sdb.updDeviceTimeWork();
-
         sTreker.updateUI();
         DeviceTimeWorkForDay.updateUI();
 
->>>>>>> origin/master
     }//GEN-LAST:event_butRaschetActionPerformed
 
     private void sTrekerMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sTrekerMouseClicked
