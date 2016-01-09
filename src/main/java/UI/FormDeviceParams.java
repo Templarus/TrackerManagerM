@@ -1,10 +1,11 @@
 package UI;
 
+import Db.ServerDb;
 import trekermanager.Device;
 // Popup используемый для ввода нового устройсва в ручном режиме.
 
 public class FormDeviceParams extends javax.swing.JDialog {
-
+   private  ServerDb sdb;
     /**
      * Creates new form FormDeviceParams
      *
@@ -13,6 +14,7 @@ public class FormDeviceParams extends javax.swing.JDialog {
      */
     public FormDeviceParams(javax.swing.JFrame parent, boolean modal) {
         initComponents();
+         this.sdb=Start.mf.getSdb();
     }
 
     /**
@@ -107,7 +109,7 @@ public class FormDeviceParams extends javax.swing.JDialog {
                 Device device = new Device(TextFieldId.getText(), Integer.parseInt(TextFieldPort.getText()), TextFieldPass1.getText());
                 System.out.println("FormDeviceParams: Device" + TextFieldId.getText() + " Added");
                 if (Start.mf.addDevice(device)) { // если такого устройства нет в DeviceList - оно записывается в справочник DB и добавляется для отрисовки
-                    Start.mf.sdb.setDevice(device);
+                    sdb.setDevice(device);
                     System.out.println("FormDeviceParams: Device Added");
                     Start.mf.reload();
                     this.dispose();

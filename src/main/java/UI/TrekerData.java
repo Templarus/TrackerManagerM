@@ -5,6 +5,7 @@
  */
 package UI;
 
+import Db.ServerDb;
 import java.sql.Date;
 import static javax.swing.ListSelectionModel.SINGLE_SELECTION;
 
@@ -17,25 +18,26 @@ public class TrekerData extends javax.swing.JDialog {
     private DatabaseTableModel dbm = new DatabaseTableModel(false);
     private DatabaseTableModel dbmDeviceTimeWork = new DatabaseTableModel(false);
     private DatabaseTableModel dbmDeviceTimeWorkExtend = new DatabaseTableModel(false);
-
+    private  ServerDb sdb;
+    
     /**
      * Creates new form TrekerData
      */
     public TrekerData(javax.swing.JFrame parent, boolean modal) {
         initComponents();
-
+ this.sdb=Start.mf.getSdb();
         try {
-            dbm.setDataSource(Start.mf.sdb.getSTreker());
+            dbm.setDataSource(sdb.getSTreker());
         } catch (Exception ex) {
             System.out.println("Создание таблицы перенаправленные ошибка доступа к RS" + ex);
         }
         try {
-            dbmDeviceTimeWork.setDataSource(Start.mf.sdb.getDeviceTimeWork());
+            dbmDeviceTimeWork.setDataSource(sdb.getDeviceTimeWork());
         } catch (Exception ex) {
             System.out.println("Создание таблицы отработано времени по дням ошибка доступа к RS" + ex);
         }
         try {
-            dbmDeviceTimeWorkExtend.setDataSource(Start.mf.sdb.getDeviceTimeWorkExtend());
+            dbmDeviceTimeWorkExtend.setDataSource(sdb.getDeviceTimeWorkExtend());
         } catch (Exception ex) {
             System.out.println("Создание таблицы отработано времени по дням расшифровка ошибка доступа к RS" + ex);
         }
@@ -178,9 +180,17 @@ public class TrekerData extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void butRaschetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_butRaschetActionPerformed
+<<<<<<< HEAD
         MainForm.sdb.updDeviceTimeWork();
         sTreker.updateUI();
         DeviceTimeWorkForDay.updateUI();
+=======
+        sdb.updDeviceTimeWork();
+
+        sTreker.updateUI();
+        DeviceTimeWorkForDay.updateUI();
+
+>>>>>>> origin/master
     }//GEN-LAST:event_butRaschetActionPerformed
 
     private void sTrekerMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sTrekerMouseClicked
@@ -189,7 +199,7 @@ public class TrekerData extends javax.swing.JDialog {
             String deviceId = (String) sTreker.getValueAt(sTreker.getSelectedRow(), 0);
             String sql = "SELECT deviceId AS Устройство, dtWork AS Дата, SUM(timeWorkin) AS [Время отработанное(мин)] FROM DeviceTimeWork GROUP BY deviceId, dtWork HAVING (deviceId = N'" + deviceId + "') ORDER BY Дата";
             try {
-                dbmDeviceTimeWork.setDataSource(Start.mf.sdb.selectDb(sql));
+                dbmDeviceTimeWork.setDataSource(sdb.selectDb(sql));
             } catch (Exception ex) {
                 System.out.println("Переход между записями в талице спр трекеров ошибка доступа к RS" + ex);
             }
@@ -199,7 +209,7 @@ public class TrekerData extends javax.swing.JDialog {
             }
             sql = "SELECT deviceId AS Устройство, dtWork AS Дата,CONVERT(nvarchar(8),timeBegin) as [Время начала работы], CONVERT(nvarchar(8),timeEnd) as [Время окончания работы], timeWorkin  AS [Время отработанное(мин)] FROM DeviceTimeWork WHERE deviceId = N'" + deviceId + "' AND dtWork = '" + dtFirst.toString() + "' ORDER BY timeBegin";
             try {
-                dbmDeviceTimeWorkExtend.setDataSource(Start.mf.sdb.selectDb(sql));
+                dbmDeviceTimeWorkExtend.setDataSource(sdb.selectDb(sql));
             } catch (Exception ex) {
                 System.out.println("Переход между записями в талице спр трекеров ошибка доступа к RS -обвноыление таблицы расшифровки" + ex);
             }
@@ -212,7 +222,7 @@ public class TrekerData extends javax.swing.JDialog {
             String deviceId = (String) sTreker.getValueAt(sTreker.getSelectedRow(), 0);
             String sql = "SELECT deviceId AS Устройство, dtWork AS Дата, CONVERT(nvarchar(8),timeBegin) as [Время начала работы], CONVERT(nvarchar(8),timeEnd) as [Время окончания работы], timeWorkin  AS [Время отработанное(мин)] FROM DeviceTimeWork WHERE deviceId = N'" + deviceId + "' AND dtWork = '" + dtFirst.toString() + "' ORDER BY timeBegin";
             try {
-                dbmDeviceTimeWorkExtend.setDataSource(Start.mf.sdb.selectDb(sql));
+                dbmDeviceTimeWorkExtend.setDataSource(sdb.selectDb(sql));
             } catch (Exception ex) {
                 System.out.println("Переход между записями в талице время работы устройства ошибка доступа к RS -обвноыление таблицы расшифровки" + ex);
             }
