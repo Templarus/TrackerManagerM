@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 //Класс предназначенный для создания и обработки соединения с одним устройством
 public class DeviceListener implements Runnable {
@@ -54,7 +56,7 @@ public class DeviceListener implements Runnable {
                 try {
                     in = clientSocket.getInputStream();
                     out = clientSocket.getOutputStream();
-                    incoming = new byte[256];
+                    incoming = new byte[8192]; // увеличил буффер до килобайта. а лучше конечно до 8
                     length = in.read(incoming);
                 } catch (IOException ex) {
                     System.err.println("DeviceListener:IOException in listener(getInputStream) " + device.getId() + " : " + ex.getMessage());
@@ -68,9 +70,10 @@ public class DeviceListener implements Runnable {
 
                 // String reply = makeAnswer(incoming); // выполняется метод, который возвращает устройству требуемый ответ в зависимости от пришедшего пакета
                 //if (reply.equals("empty")) { //если вернулось empty - устройство разорвало соединение со своей стороны.
-                if (Start.mf.getMessagesFromBuffer(device).isEmpty()) {
+                if (Start.mf.getMessagesFromBuffer(device).contains("empty")) {
                     System.err.println("DeviceListener: empty answer");
                     Start.mf.setWatcherStatus(device, false); // соединение разорвано и требуется запустить новый поток с новым Listener для этого порта и устройства
+                    Start.mf.cleanMessageBuffer(device);
                 } else {
                     for (String reply : Start.mf.getMessagesFromBuffer(device)) {
                         try {
@@ -186,7 +189,12 @@ public class DeviceListener implements Runnable {
         ibutton = body[14];
         params = body[15];
 
-        PackageData D = new PackageData(device.getId(), date, time, lat, lon, speed, course, height, sats, hdop, digitinput, digitouput, ads, ibutton, params);
+        PackageData D = null;
+        try {
+            D = new PackageData(device.getId(), date, time, lat, lon, speed, course, height, sats, hdop, digitinput, digitouput, ads, ibutton, params);
+        } catch (Exception ex) {
+            Logger.getLogger(DeviceListener.class.getName()).log(Level.SEVERE, null, ex);
+        }
         System.out.println("DeviceListener: getData executed");
 
         return D;

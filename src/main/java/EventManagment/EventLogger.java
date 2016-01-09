@@ -1,5 +1,6 @@
 package EventManagment;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,14 +11,15 @@ import java.util.List;
  */
 public class EventLogger {
 
-    private LinkedList<Event> eventLog;
-    private List<String> eventTexts;
+    private LinkedList<Event> eventLog=new LinkedList<Event>();
+    private ArrayList<String> eventTexts=new ArrayList<String>();
 
     public LinkedList<Event> getEventLog() {
         return eventLog;
     }
 
     public EventLogger() {
+        System.err.println("111111111111111111111");
         loadDataFromDb();
     }
 
@@ -50,9 +52,9 @@ public class EventLogger {
 
     /**
      *
-     * @param eventType 0- DeviceEvent, 1 -AppEvent
-     * @param eventSeverity важность события (0-5) 0-передача сообщений,
-     * 1-технические\инфо, 2-4 = важность
+     * @param eventType 1- DeviceEvent, 2 -AppEvent
+     * @param eventSeverity важность события (0-5) 1-передача сообщений,
+     * 2-технические\инфо, 3-5 = важность
      * @param source если >=0 - это устройство и тут лежит deviceID, если меньше
      * = это другой источник(и может быть простая заглушка в виде -1)
      * @param eventTextId собственно текст который отображается пользователю - в
@@ -62,12 +64,12 @@ public class EventLogger {
     public boolean createNewEvent(int eventType, int eventSeverity, int source, int eventTextId) {
 
         switch (eventType) {
-            case 0:
+            case 1:
                 DeviceEvent dev = createDeviceEvent(eventSeverity, source, eventTextId);
                 if (!eventLog.contains(dev)) {
                     return eventLog.add(dev);
                 }
-            case 1:
+            case 2:
                 AppEvent app = createAppEvent(eventSeverity, source, eventTextId);
                 if (!eventLog.contains(app)) {
                     return eventLog.add(app);
@@ -79,9 +81,9 @@ public class EventLogger {
 
     /**
      *
-     * @param eventType 0- DeviceEvent, 1 -AppEvent
-     * @param eventSeverity важность события (0-5) 0-передача сообщений,
-     * 1-технические\инфо, 2-4 = важность
+     * @param eventType 1- DeviceEvent, 2 -AppEvent
+     * @param eventSeverity важность события (0-5) 1-передача сообщений,
+     * 2-технические\инфо, 3-5 = важность
      * @param source если >=0 - это устройство и тут лежит deviceID, если меньше
      * = это другой источник(и может быть простая заглушка в виде -1)
      * @param eventText собственно текст который отображается пользователю -
@@ -97,6 +99,7 @@ public class EventLogger {
                     return eventLog.add(dev);
                 }
             case 1:
+                System.err.println("{EQ{E{Q{EQEFDFSDFGGSDG");
                 AppEvent app = createAppEvent(eventSeverity, source, eventText);
                 if (!eventLog.contains(app)) {
                     return eventLog.add(app);

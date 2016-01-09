@@ -31,7 +31,8 @@ public class MainForm extends javax.swing.JFrame {
     public MainForm() {
         initComponents();
         if (load()) {
-//            eventLogger.createNewEvent(1, 1, -1,"");
+       //     eventLogger=new EventLogger();
+            //     eventLogger.createNewEvent(1, 1, -1,"LOADED");
         }
 
     }
@@ -120,23 +121,25 @@ public class MainForm extends javax.swing.JFrame {
     }
 
     public void sendMessageToBuffer(Device d, String message) {
-        HashSet<String> mess=new HashSet<String>() ;
+        HashSet<String> mess = new HashSet<String>();
         if (!messageBuffer.isEmpty()) {
             mess = (HashSet<String>) messageBuffer.get(d);
-            System.err.println(Arrays.toString(mess.toArray()));
+            System.err.println(mess.toString());
+            //if (!mess.equals(null)){ System.err.println(Arrays.toString(mess.toArray()));}
             if (!mess.contains(message)) {
                 mess.add(message);
             }
+        } else {
+            mess.add(message);
         }
-        else{
-         mess.add(message);
-        }
-         System.err.println(Arrays.toString(mess.toArray()));
+        System.err.println(Arrays.toString(mess.toArray()));
         messageBuffer.put(d, mess);
     }
 
     public void cleanMessageBuffer(Device d) {
+
         messageBuffer.put(d, new HashSet<String>());
+        System.err.println("MainForm: Message for device " + d.getId() + " cleaned. Buffer status=" + messageBuffer.get(d).toString());
     }
 
     /**
@@ -291,10 +294,12 @@ public class MainForm extends javax.swing.JFrame {
             pd.setAlignmentX(PanelDevice.CENTER_ALIGNMENT);
             PanelPane.add(pd);// добавляем панельку на Jpanel, который будет встроен в Scroll Pane
             pd.setVisible(true);
-
             i++;
             PanelPane.setPreferredSize(new java.awt.Dimension(PanelPane.getPreferredSize().width, 70 * i + 15));
             panelDeviceList.put(device.getId(), pd);
+            
+            HashSet<String> mess = new HashSet<String>();
+            messageBuffer.put(device, mess);
         }
         PanelPane.revalidate();
         PanelScrolPane.setViewportView(PanelPane);
@@ -309,6 +314,7 @@ public class MainForm extends javax.swing.JFrame {
 
 // создание наблюдталея в отдельном потоке
     private void createWatcher() {
+
         Watcher watcher = new Watcher();
         Thread t2 = new Thread(watcher);
         t2.start();
