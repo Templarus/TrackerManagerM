@@ -123,7 +123,7 @@ public class YandexRequest {
         conn.setRequestProperty("Cache-Control", "no-cache");
         conn.setRequestProperty("Postman-Token", "f7308c39-1a7f-4326-459e-305d491d65c4");
 
-        // пишем туда HTTP request
+        // РїРёС€РµРј С‚СѓРґР° HTTP request
         String request = jsonA;
         // String request = "json=" + makeJson() + "";
 
@@ -161,7 +161,7 @@ public class YandexRequest {
         }
 
 // ----------------------------------------------------------------------------        
-//         вариант 1        
+//         РІР°СЂРёР°РЅС‚ 1        
         System.err.println(jAnsw.keySet().toString());
         JSONObject jAnsw1 = jAnsw.getJSONObject("position");
         System.out.println("-=-=-=-=-=-=-=-=-=-==-");
@@ -169,14 +169,17 @@ public class YandexRequest {
         lat = (Double) jAnsw1.getDouble("latitude");
         lon = (Double) jAnsw1.getDouble("longitude");
 // ----------------------------------------------------------------------------
-////         вариант 2          не пашет - в keyset только position почему-то
+////         РІР°СЂРёР°РЅС‚ 2          РЅРµ РїР°С€РµС‚ - РІ keyset С‚РѕР»СЊРєРѕ position РїРѕС‡РµРјСѓ-С‚Рѕ
 // ----------------------------------------------------------------------------        
 //        System.err.println(jAnsw.keySet().toString());
 //        lat = jAnsw.optDouble("latitude");
 //        lon = jAnsw.optDouble("longitude");
 
         //https://geocode-maps.yandex.ru/1.x/?format=json&geocode=37.470653,55.664897
+        //5539.9648,N	03728.2517,E
+        //https://geocode-maps.yandex.ru/1.x/?format=json&geocode=5539.9648,N,03728.2517,E
       return  getLocation();
+      
     }
 
     private String[] getLocation() {
@@ -192,7 +195,7 @@ public class YandexRequest {
         // conn.setDoOutput(false);
         conn.setDoInput(true);
 // -----------------------------------------------------------------------------------------------        
-        //вариант номер 1
+        //РІР°СЂРёР°РЅС‚ РЅРѕРјРµСЂ 1
         StringBuilder strBuilder = new StringBuilder();
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
@@ -208,7 +211,7 @@ public class YandexRequest {
         JSONObject jAnsw = new JSONObject(strBuilder.toString());
 
 // ----------------------------------------------------------------------------------------------        
-//        //вариант номер 2
+//        //РІР°СЂРёР°РЅС‚ РЅРѕРјРµСЂ 2
 //         char[] incoming = new char[8192];
 //        try {
 //            InputStreamReader in = new InputStreamReader(conn.getInputStream());
@@ -258,7 +261,7 @@ public class YandexRequest {
             System.err.println("Step=" + i + " String=" + featureMember.get(i).toString());
         }
         System.err.println("\t\t--=-=-=-=-=-=-=-=-=-=-=-=");
-//                да хрен так просто это работает..                
+//                РґР° С…СЂРµРЅ С‚Р°Рє РїСЂРѕСЃС‚Рѕ СЌС‚Рѕ СЂР°Р±РѕС‚Р°РµС‚..                
         String ThoroughfareName = featureMember.optString(0);
         System.out.println("\t\t\tThoroughfareName =\n\t\t\t" + ThoroughfareName);
         System.err.println("\t\t\t+-+-+-++-+-+-+-+--+-+-+-+-+");
