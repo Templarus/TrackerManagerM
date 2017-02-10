@@ -5,8 +5,15 @@ public static MainForm mf;
     public Start() {
         
         initComponents();
+         launchTracker();
     }
-
+private void launchTracker()
+{
+     mf = new MainForm();
+        dispose();
+        mf.setBounds(300, 400, mf.getPreferredSize().width, mf.getPreferredSize().height);
+        mf.setVisible(true);
+}
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -73,7 +80,8 @@ public static MainForm mf;
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Start().setVisible(true);
+                new Start();//.setVisible(true);
+               
             }
         });
     }

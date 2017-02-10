@@ -28,15 +28,11 @@ public class FormDeviceParams extends javax.swing.JDialog {
 
         jPanel1 = new javax.swing.JPanel();
         LabelId = new javax.swing.JLabel();
-        LabelPort = new javax.swing.JLabel();
         TextFieldId = new javax.swing.JTextField();
-        TextFieldPort = new javax.swing.JTextField();
         TextFieldPass1 = new javax.swing.JTextField();
         LabelPass = new javax.swing.JLabel();
         ButtonOk = new javax.swing.JButton();
         ButtonDiscard = new javax.swing.JButton();
-
-        setLocationByPlatform(true);
 
         jPanel1.setMaximumSize(new java.awt.Dimension(220, 301));
         jPanel1.setMinimumSize(new java.awt.Dimension(220, 301));
@@ -46,20 +42,20 @@ public class FormDeviceParams extends javax.swing.JDialog {
         LabelId.setText("ID устройства (15 символов)");
         jPanel1.add(LabelId);
         LabelId.setBounds(10, 10, 170, 14);
-
-        LabelPort.setText("Порт");
-        jPanel1.add(LabelPort);
-        LabelPort.setBounds(10, 70, 150, 14);
         jPanel1.add(TextFieldId);
         TextFieldId.setBounds(10, 30, 160, 30);
-        jPanel1.add(TextFieldPort);
-        TextFieldPort.setBounds(10, 90, 160, 30);
+
+        TextFieldPass1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TextFieldPass1ActionPerformed(evt);
+            }
+        });
         jPanel1.add(TextFieldPass1);
-        TextFieldPass1.setBounds(10, 150, 160, 30);
+        TextFieldPass1.setBounds(10, 90, 160, 30);
 
         LabelPass.setText("Пароль");
         jPanel1.add(LabelPass);
-        LabelPass.setBounds(10, 130, 150, 14);
+        LabelPass.setBounds(10, 70, 150, 14);
 
         ButtonOk.setText("Ок");
         ButtonOk.addActionListener(new java.awt.event.ActionListener() {
@@ -105,8 +101,9 @@ public class FormDeviceParams extends javax.swing.JDialog {
 
     private void ButtonOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ButtonOkActionPerformed
         if (TextFieldId.getText().matches("\\d{15}")) { // проверка по маске - 15 цифровых символов
-            if (Integer.parseInt(TextFieldPort.getText()) != 0) { // порт не ограничен нормально, но всё равно - цифры и не 0
-                Device device = new Device(TextFieldId.getText(), Integer.parseInt(TextFieldPort.getText()), TextFieldPass1.getText());
+            
+              //  Device device = new Device(TextFieldId.getText(), Integer.parseInt(TextFieldPort.getText()), TextFieldPass1.getText());
+             Device device = new Device(TextFieldId.getText(), TextFieldPass1.getText());
                 System.out.println("FormDeviceParams: Device" + TextFieldId.getText() + " Added");
                 if (Start.mf.addDevice(device)) { // если такого устройства нет в DeviceList - оно записывается в справочник DB и добавляется для отрисовки
                     sdb.setDevice(device);
@@ -116,12 +113,16 @@ public class FormDeviceParams extends javax.swing.JDialog {
                 } else {
                     System.err.println("Device exists");
                 }
-            }
+
         } else {
             System.err.println("incorrect input");
         }
 
     }//GEN-LAST:event_ButtonOkActionPerformed
+
+    private void TextFieldPass1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TextFieldPass1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_TextFieldPass1ActionPerformed
 
     public static void main(String args[]) {
 
@@ -144,10 +145,8 @@ public class FormDeviceParams extends javax.swing.JDialog {
     private javax.swing.JButton ButtonOk;
     private javax.swing.JLabel LabelId;
     private javax.swing.JLabel LabelPass;
-    private javax.swing.JLabel LabelPort;
     private javax.swing.JTextField TextFieldId;
     private javax.swing.JTextField TextFieldPass1;
-    private javax.swing.JTextField TextFieldPort;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 }

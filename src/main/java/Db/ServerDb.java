@@ -14,6 +14,7 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.sql.Date;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -22,8 +23,6 @@ import trekermanager.PackageData;
 
 public class ServerDb implements Constatnts {
 
-    private ServerSocket serverSocket;
-    private Socket clientSocket;
     private ObjectInputStream input;
     private ObjectOutputStream output;
     protected Connection conn;
@@ -130,7 +129,7 @@ public class ServerDb implements Constatnts {
     public int setDevice(Device dev) {
         sql = "INSERT INTO STreker "
                 + "(deviceId, port, password) "
-                + "VALUES ('" + dev.getId() + "'," + dev.getPort() + ",'" + dev.getPassword() + "')";//
+                + "VALUES ('" + dev.getId() + "'," + ",'" + dev.getPassword() + "')";//
         if (insertDb(sql) > 0) {
             return Constatnts.OK;
         } else {
@@ -196,7 +195,7 @@ public class ServerDb implements Constatnts {
             sql = "SELECT deviceId, port, password FROM STreker";
             ResultSet rs = selectDb(sql);
             while (rs.next()) {
-                device = new Device(rs.getString(1), rs.getInt(2), rs.getString(3));
+                device = new Device(rs.getString(1), rs.getString(3));
                 deviceList.add(device);
             }
             rs.close();

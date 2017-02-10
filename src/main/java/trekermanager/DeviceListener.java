@@ -4,120 +4,90 @@ import UI.Start;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.SocketChannel;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 //Класс предназначенный для создания и обработки соединения с одним устройством
 public class DeviceListener implements Runnable {
 
-    private ServerSocket serverSocket;
     private Device device;
-    private InputStream in;
-    private OutputStream out;
     private int length = 0;
-    private Socket clientSocket;
-    private byte[] incoming;
+    private ByteBuffer buffer;
+    private SocketChannel channel;
+    private Selector sel;
+    private boolean read;
+    private String response;
 
     private boolean status = true;  // статус соединения\открытого ClientSocker
 
-    public DeviceListener() {
-        this(new Device()); // пустой конструктор Device вернёт элемент с стандартными данными
+    public DeviceListener(SocketChannel ch) throws IOException {
+        channel = ch;
+        sel = Selector.open();
     }
 
-    public DeviceListener(Device d) {
-        this.device = d;
-    }
+    private void makeConnection() throws ClosedChannelException {
 
-    private void makeConnection() {
-        try {
-            serverSocket = new ServerSocket(device.getPort());
-            serverSocket.setSoTimeout(110000);
-            clientSocket = new Socket();
-            System.out.println("DeviceListener: Listener " + device.getId() + " started. Port " + serverSocket.getLocalPort() + " status=" + clientSocket.toString());
-        } catch (IOException ex) {
-            System.err.println("DeviceListener: IOException in listener(clientSocket = serverSocket) " + device.getId() + " : " + ex.getMessage());
-        }
-        try {
-            clientSocket = serverSocket.accept();
-            clientSocket.setSoTimeout(80000);
-        } catch (IOException ex) {
-            System.err.println("DeviceListener: IOException in listener(clientSocket = serverSocket.accept()) " + device.getId() + " : " + ex.getMessage());
-        }
-        if (clientSocket.isConnected()) {
+        channel.register(sel, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+        //System.out.println("DeviceListener: Listener " + device.getId() + " started. Status=" + clientSocket.toString());
+        // status = Start.mf.getWatcherStatus(device); // в локальную переменную записываем значение из MainForm - изначально оно = true ---------------------
+        //System.out.println("DeviceListener " + device.getId() + ": client socket got accept  status=" + clientSocket.toString());
 
-            status = Start.mf.getWatcherStatus(device); // в локальную переменную записываем значение из MainForm - изначально оно = true
-            System.out.println("DeviceListener " + device.getId() + ": client socket got accept  status=" + clientSocket.toString());
+        while (status) { //т.к. сокет был закрыт - возвращаем зачение false (которое должно быть уже задано в нужной коллекции
+            try {
+                sel.select();
+                Iterator it = sel.selectedKeys().iterator();
+                while (it.hasNext()) {
+                    SelectionKey key = (SelectionKey) it.next();
+                    it.remove();
 
-            while (status) { //т.к. сокет был закрыт - возвращаем зачение false (которое должно быть уже задано в нужной коллекции
+                    if (key.isReadable() && !read) {
 
-                Start.mf.deviceConnection(device.getId(), true); // если .accept прошёл - TCP соединение установлено
-                try {
-                    in = clientSocket.getInputStream();
-                    out = clientSocket.getOutputStream();
-                    incoming = new byte[8192]; // увеличил буффер до килобайта. а лучше конечно до 8
-                    length = in.read(incoming);
-                } catch (IOException ex) {
-                    System.err.println("DeviceListener:IOException in listener(getInputStream) " + device.getId() + " : " + ex.getMessage());
-                }
-
-                Start.mf.setTime(device, System.currentTimeMillis()); // считаем, что пакет пришёл - значит нужно обновить время
-
-                System.out.println("Client query(" + length + " bytes):" + new String(incoming).trim());
-
-                Start.mf.sendMessageToBuffer(device, makeAnswer(incoming));
-
-                // String reply = makeAnswer(incoming); // выполняется метод, который возвращает устройству требуемый ответ в зависимости от пришедшего пакета
-                //if (reply.equals("empty")) { //если вернулось empty - устройство разорвало соединение со своей стороны.
-                if (Start.mf.getMessagesFromBuffer(device).contains("empty")) {
-                    System.err.println("DeviceListener: empty answer");
-                    Start.mf.setWatcherStatus(device, false); // соединение разорвано и требуется запустить новый поток с новым Listener для этого порта и устройства
-                    Start.mf.cleanMessageBuffer(device);
-                } else {
-                    for (String reply : Start.mf.getMessagesFromBuffer(device)) {
-                        try {
-                            out.write(reply.getBytes());
-                        } catch (IOException ex) {
-                            System.err.println("DeviceListener:IOException in listener(out.write) " + device.getId() + " : " + ex.getMessage());
-
+                        if (channel.read(buffer) > 0) {
+                            read = true;
                         }
-                    }
-                    try {
-                        out.flush();
-                        // сюда добавить подтверждение выполнения
-                        Start.mf.cleanMessageBuffer(device);
-                    } catch (IOException ex) {
-                        System.err.println("DeviceListener:IOException in listener(out.flush()) " + device.getId() + " : " + ex.getMessage());
 
+                        CharBuffer cb = DeviceServer.CS.decode((ByteBuffer) buffer.flip());
+                        response = makeAnswer(cb);
                     }
-                    System.out.println("DeviceListener: getPacket executed");
-                    //       }
+                    if (key.isWritable() && read) {
+                        System.out.print("Echoing : " + response);
+                        channel.write((ByteBuffer) buffer.rewind());
+                        if (response.indexOf("END") != -1) {
+                            status = true;
+                        }
+                        buffer.clear();
+                        read = false;
+                    }
                 }
-                status = Start.mf.getWatcherStatus(device);
-            }
-        }
-        closeListener();
-    }
+            } catch (IOException e) {
+                // будет поймано Worker.java и залогировано.
+                // Необходимо выбросить исключение времени выполнения, так как мы не
+                // можем
+                // оставить IOException
+                throw new RuntimeException(e);
+            } finally {
+                try {
+                    channel.close();
+                } catch (IOException e) {
+                    System.out.println("Channel not closed.");
+                    // Выбрасываем это, чтобы рабочая нить могла залогировать.
+                    throw new RuntimeException(e);
+                }
 
-    private void closeListener() {
-        Start.mf.deviceStatus(device.getId(), false);
-        Start.mf.deviceConnection(device.getId(), false);
-        try {
-            System.err.println("DeviceListener:листенер закрылся к хуям");
-            if (clientSocket.isConnected()) {
-                clientSocket.shutdownInput();
-                clientSocket.shutdownOutput();
-                clientSocket.close();
             }
-            serverSocket.close();
-        } catch (IOException ex) {
-            System.err.println("DeviceListener:IOException in listener(serverSocket.close()) " + device.getId() + " : " + ex.getMessage());
         }
     }
 
-    private String makeAnswer(byte[] data) {
-        String message[] = new String(data).trim().split("#");
+    private String makeAnswer(CharBuffer data) {
+        String message[] = data.toString().trim().split("#");
 //        System.out.println("Message. mess[0]=" + message[0] + "mess1="+message[1]+"  mess length=" + message.length);
         if (message.length > 1) {
             switch (message[1]) {
@@ -193,7 +163,7 @@ public class DeviceListener implements Runnable {
         try {
             D = new PackageData(device.getId(), date, time, lat, lon, speed, course, height, sats, hdop, digitinput, digitouput, ads, ibutton, params);
         } catch (Exception ex) {
-            Logger.getLogger(DeviceListener.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("DeviceListener: getData exception " + ex);
         }
         System.out.println("DeviceListener: getData executed");
 
@@ -202,8 +172,28 @@ public class DeviceListener implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("DeviceListener: Listener " + device.getId() + "__" + device.getPort() + " started");
-        makeConnection();
+        response = null;
+        buffer = ByteBuffer.allocate(16);
+        read = false;
+        String response = null;
+        System.out.println("DeviceListener: Listener " + device.getId() + "__" + " started");
+        try {
+            makeConnection();
+        } catch (IOException e) {
+            // будет поймано Worker.java и залогировано.
+            // Необходимо выбросить исключение времени выполнения, так как мы не
+            // можем
+            // оставить IOException
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                channel.close();
+            } catch (IOException e) {
+                System.out.println("Channel not closed.");
+                // Выбрасываем это, чтобы рабочая нить могла залогировать.
+                throw new RuntimeException(e);
+            }
+        }
     }
 
 }
