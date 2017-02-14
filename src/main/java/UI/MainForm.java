@@ -15,11 +15,12 @@ import trekermanager.DeviceServer;
 
 public class MainForm extends javax.swing.JFrame {
 
-    private Map deviceList = new HashMap<String, Device>();  //содержит "список устройств", ключ = id устройства
+    public Map deviceList = new HashMap<String, Device>();  //содержит "список устройств", ключ = id устройства
     private Map panelDeviceList = new HashMap<String, PanelDevice>(); //содержит "список панелей" для отображения статуса устройств, ключ = id устройства
     // private Map watcherList = new HashMap<Device, Boolean>(); // содержит статусы DeviceListener для каждого устройства, ключ = указатель на устройство
     //private Map timeMap = new HashMap<Device, Long>();// содержит тайминги последнего пакета для каждого устройства
     private Map messageBuffer = new HashMap<Device, HashSet<String>>();
+    private final static Integer PORT = 5601;
 
     private static FormDeviceParams FDP; // popup для добавления нового устройства в пул "на лету"
     private static ServerDb sdb;
@@ -237,7 +238,11 @@ public class MainForm extends javax.swing.JFrame {
         loadDBdata(); // чтение изначальной конфигурации - создание списка DeviceList
         drawPanels(); // отрисовка внешнего вида согласно прочитанной конфигурации
 
-        devSrv = new DeviceServer(deviceList); // CHANGED
+        devSrv = new DeviceServer(PORT); // CHANGED
+        Thread t2 = new Thread(devSrv);
+        t2.start();
+        
+        
         System.out.println("MainForm: load executed");
         //       eventLogger.createNewEvent(1, 1, -1, "");
         return true;
@@ -346,6 +351,8 @@ public class MainForm extends javax.swing.JFrame {
     public void deviceStatus(String id, boolean status) {
         Device device = (Device) deviceList.get(id);
         device.setStatus(status);
+        PanelDevice pd = (PanelDevice) panelDeviceList.get(device.getId());
+        pd.redrawPanel(); // метод перерисовки панели (изменение цвета индикатора)
         System.out.println("MainForm: deviceStatus() Device " + device.getId() + " Status=" + status);
     }
 

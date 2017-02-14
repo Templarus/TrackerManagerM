@@ -109,8 +109,8 @@ public class PackageData extends Pack {
         System.out.println("Состояние устройства:" + this.input1);
     }
 // input2 - boolean отображение дискретного сигнала(0,1) с устройства.
-
-    @Override
+    
+       @Override
     public final void SaveToDB() {
         System.out.println("PackageData: SaveToDB executed");
         if (this.input2) {

@@ -10,9 +10,9 @@ import java.nio.channels.*;
 import java.nio.charset.*;
 import java.util.*;
 
-public class DeviceServer {
+public class DeviceServer implements Runnable {
 
-    static final int PORT = 5601;
+    static Integer PORT = 5601;
     private static String encoding = System.getProperty("file.encoding");
     public static final Charset CS = Charset.forName(encoding);
     private static ThreadPool pool = new ThreadPool(20);
@@ -21,12 +21,20 @@ public class DeviceServer {
     private Map DeviceList = new HashMap<String, Device>();
     private Set<String> keys;
 
-    public DeviceServer(Map<String, Device> devList) {
-
+    public DeviceServer(int port) {
+        this.PORT=port;
     }
 
     public static void main(String[] args) throws IOException {
-        ServerSocketChannel ssc = ServerSocketChannel.open();
+       
+    }
+
+    @Override
+    public void run() {
+        //  throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+         System.out.println("DeviceServer Started");
+        try{
+         ServerSocketChannel ssc = ServerSocketChannel.open();
         Selector sel = Selector.open();
         try {
             ssc.configureBlocking(false);
@@ -45,8 +53,8 @@ public class DeviceServer {
                                 + channel.socket());
                         channel.configureBlocking(false);
                         // Отделяем события и ассоциированное действие
-                        new DeviceListener(channel);
-                       // pool.addTask(new DeviceListener(channel));
+                       // new DeviceListener(channel);
+                        pool.addTask(new DeviceListener(channel));
                     }
                 }
             }
@@ -54,17 +62,10 @@ public class DeviceServer {
             ssc.close();
             sel.close();
         }
+        }
+        catch(IOException ex){
+            System.err.println("DeviceServer: exception "+ ex);
+            
+        }
     }
-    // метод, в используемый для создания Listener для каждого устройства
-
-//    public void startDeviceServer(Device device) {
-//        keys = Start.mf.getDevicesKeySet();
-//        for (String key : keys) {
-//            Socket socket = s.accept();
-//            timeMap.put(device, System.currentTimeMillis());
-//            Thread t1 = new Thread(DL);
-//            t1.start();
-//            System.out.println("MainForm: createListener for device " + device.getId() + " executed");
-//        }
-//    }
 }

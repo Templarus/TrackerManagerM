@@ -10,4 +10,8 @@ public abstract class Pack {
     {
         
     }
+    public boolean notNull()
+    {
+        return this.notNull();
+    }
 }

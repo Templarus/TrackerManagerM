@@ -13,12 +13,10 @@ import java.util.*;
 
 public class ThreadPool extends Thread {
 
-    private static final int DEFAULT_NUM_WORKERS = 5;
+    private static final int DEFAULT_NUM_WORKERS = 15;
     private LinkedList workerPool = new LinkedList(),
-            taskList = new LinkedList();
+    taskList = new LinkedList();
     private boolean stopped = false;
-    //private Object taskQueue;
-    private Object taskQueue;
 
     public ThreadPool() {
         this(DEFAULT_NUM_WORKERS);
@@ -31,11 +29,12 @@ public class ThreadPool extends Thread {
         start();
     }
 
+    @Override
     public void run() {
         try {
             while (!stopped) {
                 if (taskList.isEmpty()) {
-                    synchronized (taskQueue) {
+                    synchronized (taskList) {
                   // Если очередь пустая, подождать, пока будет добавлена
                         // задача
                         taskList.wait();

@@ -2,9 +2,6 @@ package trekermanager;
 
 import UI.Start;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.ClosedChannelException;
@@ -12,35 +9,31 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Set;
 
-//Класс предназначенный для создания и обработки соединения с одним устройством
+//РљР»Р°СЃСЃ РїСЂРµРґРЅР°Р·РЅР°С‡РµРЅРЅС‹Р№ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ Рё РѕР±СЂР°Р±РѕС‚РєРё СЃРѕРµРґРёРЅРµРЅРёСЏ СЃ РѕРґРЅРёРј СѓСЃС‚СЂРѕР№СЃС‚РІРѕРј
 public class DeviceListener implements Runnable {
 
     private Device device;
-    private int length = 0;
     private ByteBuffer buffer;
     private SocketChannel channel;
     private Selector sel;
     private boolean read;
     private String response;
 
-    private boolean status = true;  // статус соединения\открытого ClientSocker
+    private boolean status = true;  // СЃС‚Р°С‚СѓСЃ СЃРѕРµРґРёРЅРµРЅРёСЏ\РѕС‚РєСЂС‹С‚РѕРіРѕ ClientSocker
 
     public DeviceListener(SocketChannel ch) throws IOException {
         channel = ch;
         sel = Selector.open();
+        System.out.println("DeviceListener: Devlist started");
     }
 
     private void makeConnection() throws ClosedChannelException {
 
         channel.register(sel, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-        //System.out.println("DeviceListener: Listener " + device.getId() + " started. Status=" + clientSocket.toString());
-        // status = Start.mf.getWatcherStatus(device); // в локальную переменную записываем значение из MainForm - изначально оно = true ---------------------
-        //System.out.println("DeviceListener " + device.getId() + ": client socket got accept  status=" + clientSocket.toString());
-
-        while (status) { //т.к. сокет был закрыт - возвращаем зачение false (которое должно быть уже задано в нужной коллекции
+        while (channel.isConnected()) {
+           // System.err.println("Chanel "+ device.getId()+" state ="+channel.);
             try {
                 sel.select();
                 Iterator it = sel.selectedKeys().iterator();
@@ -59,7 +52,8 @@ public class DeviceListener implements Runnable {
                     }
                     if (key.isWritable() && read) {
                         System.out.print("Echoing : " + response);
-                        channel.write((ByteBuffer) buffer.rewind());
+
+                        channel.write((ByteBuffer) DeviceServer.CS.encode(CharBuffer.wrap(response)));
                         if (response.indexOf("END") != -1) {
                             status = true;
                         }
@@ -67,20 +61,14 @@ public class DeviceListener implements Runnable {
                         read = false;
                     }
                 }
+
             } catch (IOException e) {
-                // будет поймано Worker.java и залогировано.
-                // Необходимо выбросить исключение времени выполнения, так как мы не
-                // можем
-                // оставить IOException
+                // Р±СѓРґРµС‚ РїРѕР№РјР°РЅРѕ Worker.java Рё Р·Р°Р»РѕРіРёСЂРѕРІР°РЅРѕ.
+                // РќРµРѕР±С…РѕРґРёРјРѕ РІС‹Р±СЂРѕСЃРёС‚СЊ РёСЃРєР»СЋС‡РµРЅРёРµ РІСЂРµРјРµРЅРё РІС‹РїРѕР»РЅРµРЅРёСЏ, С‚Р°Рє РєР°Рє РјС‹ РЅРµ
+                // РјРѕР¶РµРј
+                // РѕСЃС‚Р°РІРёС‚СЊ IOException
+                System.err.println("DeviceListener: Exception " + e);
                 throw new RuntimeException(e);
-            } finally {
-                try {
-                    channel.close();
-                } catch (IOException e) {
-                    System.out.println("Channel not closed.");
-                    // Выбрасываем это, чтобы рабочая нить могла залогировать.
-                    throw new RuntimeException(e);
-                }
 
             }
         }
@@ -93,12 +81,21 @@ public class DeviceListener implements Runnable {
             switch (message[1]) {
                 case "L":
                     // System.err.println("1");
-                    return "#AL#1\r\n";
 
-                case "D": // пакет с данными - требуется его разборка, вызывается метод getData, в котором происходит создание элемента класса PackageData( абстр Pack)
+                    if (registerDevice(message[2].split(";"))) {
+                        return "#AL#1\r\n";
+                    } else {
+                        return "END";
+                    }
+
+                case "D": // РїР°РєРµС‚ СЃ РґР°РЅРЅС‹РјРё - С‚СЂРµР±СѓРµС‚СЃСЏ РµРіРѕ СЂР°Р·Р±РѕСЂРєР°, РІС‹Р·С‹РІР°РµС‚СЃСЏ РјРµС‚РѕРґ getData, РІ РєРѕС‚РѕСЂРѕРј РїСЂРѕРёСЃС…РѕРґРёС‚ СЃРѕР·РґР°РЅРёРµ СЌР»РµРјРµРЅС‚Р° РєР»Р°СЃСЃР° PackageData( Р°Р±СЃС‚СЂ Pack)
                     //System.err.println("2");
-                    getData(message[2]);
-                    return "#AD#1\r\n";
+
+                    if (getData(message[2]) != null) {
+                        return "#AD#1\r\n";
+                    } else {
+                        return "END";
+                    }
 
                 case "P":
                     // System.err.println("3");
@@ -106,10 +103,10 @@ public class DeviceListener implements Runnable {
             }
         }
         System.err.println("4");
-        return "empty";
+        return "END";
 
     }
-// разборка пакета с данными на собственно данные
+// СЂР°Р·Р±РѕСЂРєР° РїР°РєРµС‚Р° СЃ РґР°РЅРЅС‹РјРё РЅР° СЃРѕР±СЃС‚РІРµРЅРЅРѕ РґР°РЅРЅС‹Рµ
 
     private Pack getData(String message) {
 //D#020100;030350;NA;NA;NA;NA;NA;NA;NA;NA;NA;NA;NA;;000000000000;IDX:1:108,MCC:1:250,MNC:1:1,LAC:1:407,CID:1:56625,Vext:1:5977,IN1:1:0,IN2:1:0
@@ -164,33 +161,48 @@ public class DeviceListener implements Runnable {
             D = new PackageData(device.getId(), date, time, lat, lon, speed, course, height, sats, hdop, digitinput, digitouput, ads, ibutton, params);
         } catch (Exception ex) {
             System.out.println("DeviceListener: getData exception " + ex);
+            return null;
         }
         System.out.println("DeviceListener: getData executed");
 
         return D;
     }
 
+    private Boolean registerDevice(String[] message) {
+        Set<String> keys = Start.mf.deviceList.keySet();
+        String login = message[0];
+        String pass = message[1];
+        if (keys.contains(login)) {
+            System.out.println("Login=" + login);
+            Start.mf.deviceConnection(login, true);
+            this.device = (Device) Start.mf.getDeviceList().get(login);
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void run() {
+        System.err.println("DeviceListener: run");
         response = null;
-        buffer = ByteBuffer.allocate(16);
+        buffer = ByteBuffer.allocate(2048);
         read = false;
-        String response = null;
-        System.out.println("DeviceListener: Listener " + device.getId() + "__" + " started");
+        //    System.out.println("DeviceListener: Listener " + device.getId() + "__" + " started");
         try {
+            System.err.println("DeviceListener: makeConnection");
             makeConnection();
         } catch (IOException e) {
-            // будет поймано Worker.java и залогировано.
-            // Необходимо выбросить исключение времени выполнения, так как мы не
-            // можем
-            // оставить IOException
+            // Р±СѓРґРµС‚ РїРѕР№РјР°РЅРѕ Worker.java Рё Р·Р°Р»РѕРіРёСЂРѕРІР°РЅРѕ.
+            // РќРµРѕР±С…РѕРґРёРјРѕ РІС‹Р±СЂРѕСЃРёС‚СЊ РёСЃРєР»СЋС‡РµРЅРёРµ РІСЂРµРјРµРЅРё РІС‹РїРѕР»РЅРµРЅРёСЏ, С‚Р°Рє РєР°Рє РјС‹ РЅРµ
+            // РјРѕР¶РµРј
+            // РѕСЃС‚Р°РІРёС‚СЊ IOException
             throw new RuntimeException(e);
         } finally {
             try {
                 channel.close();
             } catch (IOException e) {
                 System.out.println("Channel not closed.");
-                // Выбрасываем это, чтобы рабочая нить могла залогировать.
+                // Р’С‹Р±СЂР°СЃС‹РІР°РµРј СЌС‚Рѕ, С‡С‚РѕР±С‹ СЂР°Р±РѕС‡Р°СЏ РЅРёС‚СЊ РјРѕРіР»Р° Р·Р°Р»РѕРіРёСЂРѕРІР°С‚СЊ.
                 throw new RuntimeException(e);
             }
         }
