@@ -15,7 +15,7 @@ public class DeviceServer implements Runnable {
     static Integer PORT = 5601;
     private static String encoding = System.getProperty("file.encoding");
     public static final Charset CS = Charset.forName(encoding);
-    private static ThreadPool pool = new ThreadPool(20);
+    private static ThreadPool pool = new ThreadPool(3);
     private Map timeMap = new HashMap<Device, Long>();// содержит тайминги последнего пакета для каждого устройства
     private Map deviceStatusList = new HashMap<Device, Boolean>(); // содержит статусы DeviceListener для каждого устройства, ключ = указатель на устройство
     private Map DeviceList = new HashMap<String, Device>();
@@ -55,6 +55,7 @@ public class DeviceServer implements Runnable {
                         // Отделяем события и ассоциированное действие
                        // new DeviceListener(channel);
                         pool.addTask(new DeviceListener(channel));
+                        //pool.addTask(new DeviceListener(channel.socket()));
                     }
                 }
             }

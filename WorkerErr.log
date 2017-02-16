@@ -1,0 +1,16 @@
+фев 17, 2017 12:15:41 AM trekermanager.Worker run
+SEVERE: Exception in source Runnable task
+java.lang.NullPointerException
+	at trekermanager.DeviceListener.closeConn(DeviceListener.java:91)
+	at trekermanager.DeviceListener.makeConnection(DeviceListener.java:70)
+	at trekermanager.DeviceListener.run(DeviceListener.java:219)
+	at trekermanager.Worker.run(Worker.java:58)
+
+фев 17, 2017 12:15:47 AM trekermanager.Worker run
+SEVERE: Exception in source Runnable task
+java.lang.NullPointerException
+	at trekermanager.DeviceListener.closeConn(DeviceListener.java:91)
+	at trekermanager.DeviceListener.makeConnection(DeviceListener.java:70)
+	at trekermanager.DeviceListener.run(DeviceListener.java:219)
+	at trekermanager.Worker.run(Worker.java:58)
+

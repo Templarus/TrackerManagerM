@@ -2,6 +2,7 @@ package trekermanager;
 
 import UI.Start;
 import java.io.IOException;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.ClosedChannelException;
@@ -16,8 +17,8 @@ public class DeviceListener implements Runnable {
 
     private Device device;
     private ByteBuffer buffer;
-    private SocketChannel channel;
-    private Selector sel;
+    private final SocketChannel channel;
+    private final Selector sel;
     private boolean read;
     private String response;
 
@@ -29,40 +30,51 @@ public class DeviceListener implements Runnable {
         System.out.println("DeviceListener: Devlist started");
     }
 
-    private void makeConnection() throws ClosedChannelException {
+
+    private void makeConnection() throws ClosedChannelException, SocketException {
 
         channel.register(sel, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-        while (channel.isConnected()) {
-           // System.err.println("Chanel "+ device.getId()+" state ="+channel.);
+        channel.socket().setSoTimeout(110000);
+        while (status) {
+            // System.err.println("Chanel "+ device.getId()+" state ="+channel.);
             try {
+
                 sel.select();
-                Iterator it = sel.selectedKeys().iterator();
+                //System.out.println("sel.select()=" + num);
+                               Iterator it = sel.selectedKeys().iterator();
                 while (it.hasNext()) {
                     SelectionKey key = (SelectionKey) it.next();
+
                     it.remove();
+                    //if(!sel.isOpen()){;}
+                    //System.err.println("key.isReadable() " + key.isReadable() + "read = " + read);
+                    if (key.isReadable()) {
+                        if (!read) {
 
-                    if (key.isReadable() && !read) {
+                            //System.err.println("channel.read(buffer) " + channel.read(buffer));
+                            if (channel.read(buffer) > 0) {
+                                read = true;
+                            }
 
-                        if (channel.read(buffer) > 0) {
-                            read = true;
+                            CharBuffer cb = DeviceServer.CS.decode((ByteBuffer) buffer.flip());
+                            response = makeAnswer(cb.toString());
                         }
-
-                        CharBuffer cb = DeviceServer.CS.decode((ByteBuffer) buffer.flip());
-                        response = makeAnswer(cb);
                     }
+                   // System.err.println("key.isWritable() " + key.isWritable());
                     if (key.isWritable() && read) {
-                        System.out.print("Echoing : " + response);
+                        System.out.println("Echoing : " + response);
 
                         channel.write((ByteBuffer) DeviceServer.CS.encode(CharBuffer.wrap(response)));
-                        if (response.indexOf("END") != -1) {
-                            status = true;
+                        if (response.equals("END")) {
+                            System.err.println("Unknown pakage,channel closed");
+                            closeConn();
                         }
                         buffer.clear();
                         read = false;
                     }
                 }
-
-            } catch (IOException e) {
+                Thread.sleep(1000);
+            } catch (IOException | InterruptedException e) {
                 // Р±СѓРґРµС‚ РїРѕР№РјР°РЅРѕ Worker.java Рё Р·Р°Р»РѕРіРёСЂРѕРІР°РЅРѕ.
                 // РќРµРѕР±С…РѕРґРёРјРѕ РІС‹Р±СЂРѕСЃРёС‚СЊ РёСЃРєР»СЋС‡РµРЅРёРµ РІСЂРµРјРµРЅРё РІС‹РїРѕР»РЅРµРЅРёСЏ, С‚Р°Рє РєР°Рє РјС‹ РЅРµ
                 // РјРѕР¶РµРј
@@ -72,10 +84,22 @@ public class DeviceListener implements Runnable {
 
             }
         }
+
     }
 
-    private String makeAnswer(CharBuffer data) {
-        String message[] = data.toString().trim().split("#");
+    private void closeConn() throws IOException {
+        System.out.println("deviceListener: " + device.getId() + " it.hasnext=false");
+        status = false;
+        Start.mf.deviceConnection(device.getId(), status);
+        
+        channel.shutdownInput();
+        channel.shutdownOutput();
+        channel.socket().close();
+        channel.close();
+    }
+
+    private String makeAnswer(String data) throws IOException {
+        String message[] = data.trim().split("#");
 //        System.out.println("Message. mess[0]=" + message[0] + "mess1="+message[1]+"  mess length=" + message.length);
         if (message.length > 1) {
             switch (message[1]) {
@@ -103,6 +127,7 @@ public class DeviceListener implements Runnable {
             }
         }
         System.err.println("4");
+        closeConn();
         return "END";
 
     }
@@ -190,6 +215,7 @@ public class DeviceListener implements Runnable {
         //    System.out.println("DeviceListener: Listener " + device.getId() + "__" + " started");
         try {
             System.err.println("DeviceListener: makeConnection");
+            //makeConnectionSoc();
             makeConnection();
         } catch (IOException e) {
             // Р±СѓРґРµС‚ РїРѕР№РјР°РЅРѕ Worker.java Рё Р·Р°Р»РѕРіРёСЂРѕРІР°РЅРѕ.
